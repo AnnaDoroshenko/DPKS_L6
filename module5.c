@@ -1,3 +1,5 @@
+#define DEBUG
+
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/printk.h>
@@ -19,10 +21,7 @@ static void print_text(unsigned int repeats)
 	struct time_keeper *ptr;
 
 	for (repeat = 0; repeat < repeats; repeat++) {
-		if (repeat == repeats - 1)
-			ptr = 0;
-		else
-			ptr = kmalloc(sizeof(*ptr), GFP_KERNEL);
+		ptr = kmalloc(sizeof(*ptr), GFP_KERNEL);
 		ptr->time_before = ktime_get();
 		pr_info("Hello there!\n");
 		ptr->time_after = ktime_get();
@@ -35,7 +34,7 @@ static unsigned int repeats = 1;
 module_param(repeats, uint, S_IRUGO);
 MODULE_PARM_DESC(repeats, "How many hello to print");
 
-static int __init module4_init(void)
+static int __init module5_init(void)
 {
 	BUG_ON(repeats > 10);
 
@@ -49,26 +48,28 @@ static int __init module4_init(void)
 	return 0;
 }
 
-static void __exit module4_exit(void)
+static void __exit module5_exit(void)
 {
 	struct list_head *p;
 	struct list_head *n;
 	struct time_keeper *curr;
 
-	pr_info("Module 3 exit\n");
+	pr_info("Module 5 exit\n");
 
+	pr_debug("Before printing of the list\n");
 	list_for_each_safe(p, n, &lab5_list_head) {
 		curr = list_entry(p, struct time_keeper, time_list);
-		pr_info("Time needed for printing is: %lld(ns).\n",
+		pr_debug("Time needed for printing is: %lld(ns).\n",
 				curr->time_after - curr->time_before);
 		list_del(p);
 		kfree(curr);
 	}
+	pr_debug("After printing of the list\n");
 }
 
-module_init(module4_init);
-module_exit(module4_exit);
+module_init(module5_init);
+module_exit(module5_exit);
 
 MODULE_AUTHOR("Anna Doroshenko");
-MODULE_DESCRIPTION("Training to work with list");
+MODULE_DESCRIPTION("Training to debug modules");
 MODULE_LICENSE("Dual BSD/GPL");
